@@ -1,57 +1,72 @@
 export class StringCalculator {
+    private static readonly DEFAULT_DELIMITERS = /,|\n/;
+
     add(numbers: string): number {
         if (!numbers) {
             return 0;
         }
 
-        let delimiter = /,|\n/; // Default delimiters: comma and newline
+        const { delimiter, numbersSection } = this.extractDelimiter(numbers);
+        const numList = this.splitNumbers(numbersSection, delimiter);
+        this.validateNoNegatives(numList);
 
-        // Check for custom delimiter
-        if (numbers.startsWith("//")) {
-            const delimiterEndIndex = numbers.indexOf("\n");
-            delimiter = new RegExp(numbers.substring(2, delimiterEndIndex));
-            numbers = numbers.substring(delimiterEndIndex + 1); // Remove delimiter line from the numbers string
+        return this.sumNumbers(numList);
+    }
+
+    private extractDelimiter(input: string): { delimiter: RegExp, numbersSection: string } {
+        if (input.startsWith("//")) {
+            const delimiterEndIndex = input.indexOf("\n");
+            const customDelimiter = input.substring(2, delimiterEndIndex);
+            const numbersSection = input.substring(delimiterEndIndex + 1);
+            return { delimiter: new RegExp(customDelimiter), numbersSection };
         }
 
-        let sum = 0;                 // Variable to accumulate the sum of numbers
-        let currentNumber = '';      // String to accumulate characters for the current number
-        const negatives: number[] = [];  // Array to keep track of any negative numbers
+        return { delimiter: StringCalculator.DEFAULT_DELIMITERS, numbersSection: input };
+    }
 
+    private splitNumbers(numbers: string, delimiter: RegExp): number[] {
+        const numList: number[] = [];  // Array to store parsed numbers
+        let currentNumber = '';        // String to accumulate characters for the current number
+    
         // Loop through each character in the input string
         for (let i = 0; i < numbers.length; i++) {
             const char = numbers[i];
-
-            // Check if the current character matches any of the delimiters
+    
+            // If the current character matches the delimiter, process the accumulated number
             if (char.match(delimiter)) {
-                if (currentNumber) {
+                if (currentNumber.trim() !== '') {
                     const num = parseInt(currentNumber.trim(), 10);
-                    if (num < 0) {
-                        negatives.push(num); // Track negative numbers
+                    if (!isNaN(num)) {
+                        numList.push(num);  // Add the valid number to the list
                     }
-                    sum += num;
-                    currentNumber = '';  // Reset currentNumber for the next number
                 }
+                currentNumber = '';  // Reset currentNumber for the next number
             } else {
                 // Accumulate characters to form the current number
                 currentNumber += char;
             }
         }
-
-        // After the loop, handle the last number (if there's any left)
-        if (currentNumber) {
+    
+        // After the loop, handle the last number if there's any left
+        if (currentNumber.trim() !== '') {
             const num = parseInt(currentNumber.trim(), 10);
-            if (num < 0) {
-                negatives.push(num); // Track negative numbers
+            if (!isNaN(num)) {
+                numList.push(num);  // Add the valid number to the list
             }
-            sum += num;
         }
+    
+        return numList;  // Return the final list of numbers
+    }
+    
 
-        // If there are any negative numbers, throw an exception with the list of negatives
+    private validateNoNegatives(numbers: number[]): void {
+        const negatives = numbers.filter(num => num < 0);
         if (negatives.length > 0) {
             throw new Error(`Negative numbers not allowed: ${negatives.join(', ')}`);
         }
+    }
 
-        // Return the final sum of all numbers
-        return sum;
+    private sumNumbers(numbers: number[]): number {
+        return numbers.reduce((sum, num) => sum + num, 0);
     }
 }
