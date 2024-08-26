@@ -6,10 +6,12 @@ This project is a simple implementation of the **String Calculator** kata using 
 
 ## Features
 
-- Add numbers provided in a string format.
-- Handle various delimiters (commas, new lines, custom delimiters).
-- Handle negative numbers by throwing an exception.
+- Perform calculations (addition, multiplication) on numbers provided in a string format.
+- Support for custom delimiters (commas, new lines, *, +, etc.).
+- Automatically detect and apply operations based on the delimiter.
+- Handle negative numbers by throwing an exception listing all negatives.
 - Support for an unknown amount of numbers.
+- Modular and extendable design for easy addition of new features.
 
 ## Requirements
 
@@ -70,6 +72,8 @@ console.log(result); // Outputs: 6
 /string-calculator
 │
 ├── src
+│   ├── enums
+│   │   └── operation.enum.ts
 │   ├── helpers
 │   │   └── stringCalculator.helper.ts
 │   └── StringCalculator.ts
@@ -101,9 +105,15 @@ This project was developed following the Test-Driven Development (TDD) approach:
 - **New lines between numbers**: `"1\n2,3"` should return `6`.
 - **Custom delimiter**: `"//;\n1;2"` should return `3`.
 - **Negative numbers**: `"1,-2,3,-4"` should throw an error with message `"Negative numbers not allowed: -2, -4"`.
+- **Multiply numbers**: `"//\*\n1*2*4"` should return `8`.
 
 ## Future Enhancements
 
-- Support for more complex delimiters.
-- Handling of large numbers or non-numeric inputs.
-- Extended error handling and custom exceptions.
+- Add support for subtraction and division operations.
+- Allow multiple custom delimiters in a single input string.
+- Implement support for operations within parentheses.
+- Improve error handling and edge case management.
+- Add support for decimal (floating-point) numbers.
+- Include advanced mathematical functions (e.g., exponentiation).
+- Develop an interactive command-line interface (CLI).
+- Create a web-based interface for direct user interaction.
