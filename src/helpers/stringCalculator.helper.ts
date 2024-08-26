@@ -1,14 +1,31 @@
+import { Operation } from '../enums/operation.enum';
 
-export function extractDelimiter(input: string): { delimiter: RegExp, numbersSection: string } {
+export function detectOperation(delimiter: string): Operation {
+    switch (delimiter) {
+        case '*':
+            return Operation.Multiplication;
+        case '+':
+            return Operation.Addition;
+        default:
+            return Operation.Addition;  // Default to addition if no specific operator is given
+    }
+}
+
+export function extractDelimiter(input: string): { rawDelimiter: string, delimiter: RegExp, numbersSection: string } {
     if (input.startsWith("//")) {
         const delimiterEndIndex = input.indexOf("\n");
-        const customDelimiter = input.substring(2, delimiterEndIndex);
+        const rawDelimiter = input.substring(2, delimiterEndIndex);
+        
+        // Escape special regex characters in the delimiter for RegExp construction
+        const escapedDelimiter = rawDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
         const numbersSection = input.substring(delimiterEndIndex + 1);
-        return { delimiter: new RegExp(customDelimiter), numbersSection };
+        return { rawDelimiter, delimiter: new RegExp(escapedDelimiter), numbersSection };
     }
 
-    return { delimiter: /,|\n/, numbersSection: input };
+    return { rawDelimiter: ',', delimiter: /,|\n/, numbersSection: input };
 }
+
 
 export function splitNumbers(numbers: string, delimiter: RegExp): number[] {
     const numList: number[] = [];
@@ -17,7 +34,6 @@ export function splitNumbers(numbers: string, delimiter: RegExp): number[] {
     for (let i = 0; i < numbers.length; i++) {
         const char = numbers[i];
 
-        // If the current character matches the delimiter, process the accumulated number
         if (char.match(delimiter)) {
             if (currentNumber.trim() !== '') {
                 const num = parseInt(currentNumber.trim(), 10);
@@ -27,12 +43,10 @@ export function splitNumbers(numbers: string, delimiter: RegExp): number[] {
             }
             currentNumber = '';
         } else {
-            // Accumulate characters to form the current number
             currentNumber += char;
         }
     }
 
-    // Handle the last number if there's any left after the loop
     if (currentNumber.trim() !== '') {
         const num = parseInt(currentNumber.trim(), 10);
         if (!isNaN(num)) {
@@ -48,8 +62,4 @@ export function validateNoNegatives(numbers: number[]): void {
     if (negatives.length > 0) {
         throw new Error(`Negative numbers not allowed: ${negatives.join(', ')}`);
     }
-}
-
-export function sumNumbers(numbers: number[]): number {
-    return numbers.reduce((sum, num) => sum + num, 0);
 }
